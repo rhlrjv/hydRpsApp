@@ -76,20 +76,74 @@ describe('RPS', function () {
             expect(observer.tie).toHaveBeenCalled()
         })
     })
+    describe('when invalid', () => {
+        let invalidHand
+
+        beforeEach(() => {
+            observer = jasmine.createSpyObj("observer", ["invalid"])
+            invalidHand = Math.random()
+        })
+
+        it('rock vs invalid', function () {
+            requests.play('rock', invalidHand, observer)
+
+            expect(observer.invalid).toHaveBeenCalled()
+        })
+
+        it('invalid vs rock', function () {
+            requests.play(invalidHand, 'rock', observer)
+
+            expect(observer.invalid).toHaveBeenCalled()
+        })
+
+        it('invalid vs invalid', function () {
+            requests.play(invalidHand, invalidHand, observer)
+
+            expect(observer.invalid).toHaveBeenCalled()
+        })
+    })
 })
 
 
 // production code
-
-class Requests {
-    play(p1, p2, observer) {
-        if (p1 === p2)
-            observer.tie()
-        else if (p1 === "rock" && p2 === "scissors" ||
-            p1 === "paper" && p2 === "rock" ||
-            p1 === "scissors" && p2 === "paper")
-            observer.p1Wins()
-        else
-            observer.p2Wins()
+function Requests() {
+    this.play = (p1, p2, observer) => {
+        new PlayGameRequest(p1, p2, observer).perform()
     }
+
+    function PlayGameRequest(p1, p2, observer) {
+        this.perform = () => {
+            if (invalid())
+                observer.invalid()
+            else if (draw())
+                observer.tie()
+            else if (p1Wins())
+                observer.p1Wins()
+            else
+                observer.p2Wins()
+        }
+
+        p1Wins = () => {
+            return p1 === THROWS.rock && p2 === THROWS.scissors ||
+                p1 === THROWS.paper && p2 === THROWS.rock ||
+                p1 === THROWS.scissors && p2 === THROWS.paper
+        }
+
+        draw = () => {
+            return p1 === p2
+        }
+
+        invalid = () => {
+            return !VALID_SYMBOLS.includes(p1) ||
+                !VALID_SYMBOLS.includes(p2)
+        }
+
+        const THROWS = {
+            rock: "rock",
+            paper: "paper",
+            scissors: "scissors"
+        }
+        const VALID_SYMBOLS = [THROWS.rock, THROWS.paper, THROWS.scissors]
+    }
+
 }
