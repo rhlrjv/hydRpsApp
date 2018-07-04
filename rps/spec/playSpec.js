@@ -1,3 +1,5 @@
+const Requests = require('../src/RPS')
+
 describe('RPS', function () {
     let observer, requests
 
@@ -5,51 +7,51 @@ describe('RPS', function () {
         requests = new Requests()
     })
 
-    describe('when p1 wins', () => {
+    describe('when player1 wins', () => {
         beforeEach(() => {
-            observer = jasmine.createSpyObj("observer", ["p1Wins"])
+            observer = jasmine.createSpyObj("observer", ["player1Wins"])
         })
 
         it('rock v scissors', () => {
-            requests.play('rock', 'scissors', observer)
+            requests.playRound('rock', 'scissors', observer)
 
-            expect(observer.p1Wins).toHaveBeenCalled()
+            expect(observer.player1Wins).toHaveBeenCalled()
         })
 
         it('paper vs rock', () => {
-            requests.play('paper', 'rock', observer)
+            requests.playRound('paper', 'rock', observer)
 
-            expect(observer.p1Wins).toHaveBeenCalled()
+            expect(observer.player1Wins).toHaveBeenCalled()
         })
 
         it('scissors vs paper', () => {
-            requests.play('scissors', 'paper', observer)
+            requests.playRound('scissors', 'paper', observer)
 
-            expect(observer.p1Wins).toHaveBeenCalled()
+            expect(observer.player1Wins).toHaveBeenCalled()
         })
     })
 
-    describe('when p2 wins', () => {
+    describe('when player2 wins', () => {
         beforeEach(() => {
-            observer = jasmine.createSpyObj("observer", ["p2Wins"])
+            observer = jasmine.createSpyObj("observer", ["player2Wins"])
         })
 
         it('scissors vs rock', function () {
-            requests.play('scissors', 'rock', observer)
+            requests.playRound('scissors', 'rock', observer)
 
-            expect(observer.p2Wins).toHaveBeenCalled()
+            expect(observer.player2Wins).toHaveBeenCalled()
         })
 
         it('rock vs paper', function () {
-            requests.play('rock', 'paper', observer)
+            requests.playRound('rock', 'paper', observer)
 
-            expect(observer.p2Wins).toHaveBeenCalled()
+            expect(observer.player2Wins).toHaveBeenCalled()
         })
 
         it('paper vs scissors', function () {
-            requests.play('paper', 'scissors', observer)
+            requests.playRound('paper', 'scissors', observer)
 
-            expect(observer.p2Wins).toHaveBeenCalled()
+            expect(observer.player2Wins).toHaveBeenCalled()
         })
     })
 
@@ -59,91 +61,47 @@ describe('RPS', function () {
         })
 
         it('rock vs rock', function () {
-            requests.play('rock', 'rock', observer)
+            requests.playRound('rock', 'rock', observer)
 
             expect(observer.tie).toHaveBeenCalled()
         })
 
         it('paper vs paper', function () {
-            requests.play('paper', 'paper', observer)
+            requests.playRound('paper', 'paper', observer)
 
             expect(observer.tie).toHaveBeenCalled()
         })
 
         it('scissors vs scissors', function () {
-            requests.play('scissors', 'scissors', observer)
+            requests.playRound('scissors', 'scissors', observer)
 
             expect(observer.tie).toHaveBeenCalled()
         })
     })
     describe('when invalid', () => {
-        let invalidHand
+        let invalidThrow
 
         beforeEach(() => {
             observer = jasmine.createSpyObj("observer", ["invalid"])
-            invalidHand = Math.random()
+            invalidThrow = Math.random()
         })
 
         it('rock vs invalid', function () {
-            requests.play('rock', invalidHand, observer)
+            requests.playRound('rock', invalidThrow, observer)
 
             expect(observer.invalid).toHaveBeenCalled()
         })
 
         it('invalid vs rock', function () {
-            requests.play(invalidHand, 'rock', observer)
+            requests.playRound(invalidThrow, 'rock', observer)
 
             expect(observer.invalid).toHaveBeenCalled()
         })
 
         it('invalid vs invalid', function () {
-            requests.play(invalidHand, invalidHand, observer)
+            requests.playRound(invalidThrow, invalidThrow, observer)
 
             expect(observer.invalid).toHaveBeenCalled()
         })
     })
 })
-
-
-// production code
-function Requests() {
-    this.play = (p1, p2, observer) => {
-        new PlayGameRequest(p1, p2, observer).perform()
-    }
-
-    function PlayGameRequest(p1, p2, observer) {
-        this.perform = () => {
-            if (invalid())
-                observer.invalid()
-            else if (draw())
-                observer.tie()
-            else if (p1Wins())
-                observer.p1Wins()
-            else
-                observer.p2Wins()
-        }
-
-        p1Wins = () => {
-            return p1 === THROWS.rock && p2 === THROWS.scissors ||
-                p1 === THROWS.paper && p2 === THROWS.rock ||
-                p1 === THROWS.scissors && p2 === THROWS.paper
-        }
-
-        draw = () => {
-            return p1 === p2
-        }
-
-        invalid = () => {
-            return !VALID_SYMBOLS.includes(p1) ||
-                !VALID_SYMBOLS.includes(p2)
-        }
-
-        const THROWS = {
-            rock: "rock",
-            paper: "paper",
-            scissors: "scissors"
-        }
-        const VALID_SYMBOLS = [THROWS.rock, THROWS.paper, THROWS.scissors]
-    }
-
-}
