@@ -65,20 +65,26 @@ describe('PlayForm', function () {
 
     it('should send user throws to RPS', function () {
         const requestsSpy = jasmine.createSpyObj('requests', ['play'])
+        const randomThrow1 = generateRandom()
+        const randomThrow2 = generateRandom()
 
         renderPlayForm(requestsSpy)
-        fillIn('player1Throw', 'rock')
-        fillIn('player2Throw', 'scissors')
+        fillIn('player1Throw', randomThrow1)
+        fillIn('player2Throw', randomThrow2)
 
         play()
 
-        expect(requestsSpy.play).toHaveBeenCalledWith('rock', 'scissors', jasmine.any(Object))
+        expect(requestsSpy.play).toHaveBeenCalledWith(randomThrow1, randomThrow2, jasmine.any(Object))
 
     })
 
     afterEach(function () {
         domFixture.remove()
     })
+
+    function generateRandom() {
+        return Math.random().toString(36).substring(7)
+    }
 
     function fillIn(selector, value) {
         let userInput = domFixture.querySelector('[name=' + selector + ']')
@@ -106,11 +112,18 @@ describe('PlayForm', function () {
 class PlayForm extends React.Component {
     constructor(props) {
         super(props)
-        this.state = {result: ''}
+        this.state = {
+            result: '',
+            player1Throw: '',
+            player2Throw: '',
+        }
     }
 
     submitHandler() {
-        this.props.requests.play('', '', this)
+        this.props.requests.play(
+            this.state.player1Throw,
+            this.state.player2Throw,
+            this)
     }
 
     tie() {
@@ -129,11 +142,15 @@ class PlayForm extends React.Component {
         this.setState({result: "Player 2 Wins!"})
     }
 
+    inputChanged(e) {
+        this.setState({[e.target.name]: e.target.value})
+    }
+
     render() {
         return <div>
             {this.state.result}
-            <input name="player1Throw"/>
-            <input name="player2Throw"/>
+            <input name="player1Throw" onChange={this.inputChanged.bind(this)}/>
+            <input name="player2Throw" onChange={this.inputChanged.bind(this)}/>
             <button onClick={this.submitHandler.bind(this)}>
                 Play!
             </button>
